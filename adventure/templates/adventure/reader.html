@@ -1,0 +1,17 @@
+{% extends "adventure/base.html" %}
+{% block content %}
+  <div class="card p-4">
+    <h4>{{ session.book_title }} — {{ session.chosen_character }}</h4>
+    <hr>
+    <div style="white-space: pre-wrap;">{{ chapter.text }}</div>
+    <hr>
+    <h5>What will you do next?</h5>
+    <div class="list-group">
+      {% for opt in chapter.options %}
+        <a href="{% url 'follow_option' option_id=opt.id %}" class="list-group-item list-group-item-action">
+          {{ opt.text }}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

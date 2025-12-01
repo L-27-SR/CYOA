@@ -1,0 +1,15 @@
+{% extends "adventure/base.html" %}
+{% block content %}
+  <h4>Characters for "{{ book }}"</h4>
+  <p>Choose a character to start the story:</p>
+  <div class="list-group">
+    <form method="post" action="{% url 'choose_character' %}">
+      {% csrf_token %}
+      {% for c in characters %}
+        <button name="character" value="{{ c }}" class="list-group-item list-group-item-action">{{ c }}</button>
+      {% empty %}
+        <div class="alert alert-warning">No characters found. Try another title.</div>
+      {% endfor %}
+    </form>
+  </div>
+{% endblock %}
