@@ -8,6 +8,59 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from .forms import SignupForm, LoginForm
 from django.http import JsonResponse, HttpResponse
+from django.contrib.auth.decorators import login_required
+
+# --- New Views ---
+
+@login_required
+def my_adventures(request):
+    """List all saved adventures for the logged-in user."""
+    sessions = AdventureSession.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, "adventure/my_adventures.html", {"sessions": sessions})
+
+@login_required
+def resume_adventure(request, session_id):
+    """Set the session ID and redirect to the reader."""
+    session = get_object_or_404(AdventureSession, id=session_id, user=request.user)
+    request.session["adventure_session_id"] = session.id
+    return redirect("read_chapter")
+
+def read_chapter(request):
+    """
+    Renders the *current* latest chapter for the session.
+    Used for resuming a game or rendering after 'Go Back'.
+    """
+    session_id = request.session.get("adventure_session_id")
+    session = get_object_or_404(AdventureSession, id=session_id)
+    
+    # Get the latest chapter based on order
+    chapter = session.chapters.order_by("-order").first()
+    
+    # If no chapters exist (shouldn't happen in valid session), go home
+    if not chapter:
+        return redirect("index")
+        
+    return render(request, "adventure/reader.html", {"session": session, "chapter": chapter})
+
+def go_back(request):
+    """
+    'Undo' the last move by deleting the current chapter.
+    """
+    session_id = request.session.get("adventure_session_id")
+    session = get_object_or_404(AdventureSession, id=session_id)
+    
+    # Get the latest chapter
+    current_chapter = session.chapters.order_by("-order").first()
+    
+    if current_chapter:
+        # Only allow going back if we are NOT at the very first chapter (order 1)
+        if current_chapter.order > 1:
+            current_chapter.delete()
+        else:
+            # Optional: If they go back at Chapter 1, maybe show an alert or redirect home?
+            pass 
+            
+    return redirect("read_chapter")
 
 # For JWT token generation we prefer using djangorestframework-simplejwt. If it's not installed
 # you can install it with:

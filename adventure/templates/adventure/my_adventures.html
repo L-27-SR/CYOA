@@ -1,0 +1,29 @@
+{% extends "adventure/base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>My Adventures</h3>
+        <a href="{% url 'index' %}" class="btn btn-primary">+ New Adventure</a>
+    </div>
+
+    {% if sessions %}
+    <div class="list-group">
+        {% for session in sessions %}
+        <a href="{% url 'resume_adventure' session.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-1">{{ session.book_title }}</h5>
+                <small class="text-muted">Character: {{ session.chosen_character }} | Started: {{ session.created_at|date:"M d, Y" }}</small>
+            </div>
+            <span class="badge bg-primary rounded-pill">Resume</span>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        You haven't started any adventures yet. <a href="{% url 'index' %}">Start one now!</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
